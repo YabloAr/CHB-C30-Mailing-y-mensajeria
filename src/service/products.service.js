@@ -27,22 +27,20 @@ class ProductsService {
         } catch (error) { throw error }
     }
 
-    async updateProduct(pid, product) {
-        const response = await ProductsDAO.updateProduct(pid, product)
-        if (response === null) return { status: 'error', message: 'Product not found' }
-        return response
-
+    async updateProduct(pid, newData) {
         try {
 
+            const response = await ProductsDAO.updateProduct(pid, newData)
+            if (response === null) return { status: 'error', message: 'Product not found' }
+            return response
         } catch (error) { throw error }
     }
 
     async deleteProduct(pid) {
-        const response = await ProductsDAO.deleteProduct(pid)
-        return response
-
         try {
-
+            const response = await ProductsDAO.deleteProduct(pid)
+            if (response === null) return { status: 'error', message: 'Product not found' }
+            return response
         } catch (error) { throw error }
     }
 

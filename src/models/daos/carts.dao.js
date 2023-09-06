@@ -1,5 +1,6 @@
 import cartsModel from '../schemas/carts.schema.js'
 import CartDTO from '../../controllers/DTO/cart.dto.js'
+import productModel from '../schemas/products.schema.js'
 
 class CartsDAO {
     constructor() {
@@ -9,14 +10,14 @@ class CartsDAO {
     getAll = async () => {
         try {
             let carts = await cartsModel.find().lean()
-            return carts.length <= 0 ? ({ status: 500, message: 'Carts collection is empty.' }) : ({ status: 200, carts })
+            return carts.length <= 0 ? ({ status: 500, message: 'Carts collection is empty.' }) : ({ carts })
         } catch (error) { throw error }
     }
 
     getCartById = async (cid) => {
         try {
             let cart = await cartsModel.findById(cid).populate('products', 'product')
-            return cart ? ({ status: 500, message: 'Cart not found' }) : ({ status: 200, cart })
+            return cart
         } catch (error) { throw error }
     }
 
@@ -33,8 +34,8 @@ class CartsDAO {
             const thisCart = await cartsModel.findById(cid)
             if (!thisCart) { return { status: 500, message: 'Cart doesnt exist, check id.' } }
 
-            const thisProduct = await productManager.getProductById(pid)
-            if (!thisProduct) { return { status: 500, message: 'Product doesnt exist in db, check id.' } }
+            let thisProduct = await productModel.findById(pid)
+            if (!thisProduct) return { status: 500, message: 'Product doesnt exist in db, check id.' }
 
             const productIndex = await thisCart.products.findIndex((p) => p.product._id.toString() === pid);
             if (productIndex !== -1) {
@@ -45,24 +46,8 @@ class CartsDAO {
 
             const updateResult = await cartsModel.updateOne({ _id: cid }, thisCart, { new: true });
 
-            if (updateResult.nModified === 1) {
-                return { status: 200, message: `Product added to cart`, payload: updateResult };
-            } else {
-                return { status: 500, message: 'Cart not found or no changes were made.' };
-            }
-        } catch (error) { throw error }
-    }
-
-    updateCartProducts = async (cid, newProducts) => {
-        try {
-            const thisCart = await cartsModel.findById(cid)
-            if (!thisCart) return { status: 500, message: 'Cart not found' }
-
-            thisCart.products = newProducts
-            const updateResult = await cartsModel.findByIdAndUpdate(cid, thisCart, { new: true });
-
-            if (updateResult.nModified === 1) {
-                return { status: 200, message: `Complete products of ${cid} updated.`, payload: updateResult }
+            if (updateResult.modifiedCount === 1) {
+                return { status: 200, message: `Product added to cart`, payload: thisCart };
             } else {
                 return { status: 500, message: 'Cart not found or no changes were made.' };
             }
@@ -71,24 +56,47 @@ class CartsDAO {
 
     updateQuantity = async (cid, pid, quantity) => {
         try {
-            const thisCart = await cartsModel.findById(cid)
-            if (!thisCart) return { status: 500, message: 'Cart not found' }
+            const thisCart = await cartsModel.findById(cid);
+            if (!thisCart) return { status: 404, message: 'Cart not found' };
 
-            const productIndex = thisCart.products.findIndex(item => item.product._id.toString() === pid)
-            if (productIndex === -1) return { status: 500, message: 'Product does not exist in cart, check ID.' }
+            const productIndex = thisCart.products.findIndex(item => item.product._id.toString() === pid);
+            if (productIndex === -1) return { status: 500, message: 'Product does not exist in cart, check ID.' };
 
-            thisProduct.quantity = quantity
-            thisCart.products[productIndex] = thisProduct
+            const initialQuantity = thisCart.products[productIndex].quantity;
+            thisCart.products[productIndex].quantity = quantity;
 
             const updateResult = await cartsModel.findByIdAndUpdate(cid, thisCart, { new: true });
 
-            if (updateResult.nModified === 1) {
-                return { status: 200, message: 'Product quantity updated.', payload: updateResult }
+            if (updateResult.products[productIndex].quantity !== initialQuantity) {
+                return { status: 200, message: 'Product quantity updated.', payload: updateResult };
+            } else {
+                return { status: 501, message: 'No changes were made.' };
+            }
+        } catch (error) {
+            throw error;
+        }
+    };
+
+    replaceProducts = async (cid, newProducts) => {
+        try {
+            const thisCart = await cartsModel.findById(cid);
+            if (!thisCart) return { status: 404, message: 'Cart not found' };
+
+            const initialProducts = JSON.stringify(thisCart.products);
+            thisCart.products = newProducts;
+
+            const updateResult = await cartsModel.findByIdAndUpdate(cid, thisCart, { new: true });
+
+            //La validacion no funciona, le di vueltas pero siempre es true. No molesta pero fix needed.
+            const isCartModified = JSON.stringify(newProducts) !== initialProducts
+            if (isCartModified) {
+                return { status: 200, message: `Complete products of ${cid} updated.`, payload: updateResult };
             } else {
                 return { status: 500, message: 'Cart not found or no changes were made.' };
             }
-
-        } catch (error) { throw error }
+        } catch (error) {
+            throw error;
+        }
     };
 
     deleteProductFromCart = async (cid, pid) => {
@@ -102,12 +110,7 @@ class CartsDAO {
             thisCart.products.splice(productIndex, 1);
 
             const updateResult = await cartsModel.findByIdAndUpdate(cid, thisCart, { new: true });
-
-            if (updateResult.nModified === 1) {
-                return { status: 200, message: 'Product deleted.', payload: updateResult }
-            } else {
-                return { status: 500, message: 'Cart not found or no changes were made.' };
-            }
+            return { status: 200, message: 'Product deleted.', payload: updateResult }
 
         } catch (error) {
             return { status: 'error', message: `Try failed, caught error: ${error.message}` };
@@ -116,18 +119,14 @@ class CartsDAO {
 
     emptyCart = async (cid) => {
         try {
-
             const thisCart = await cartsModel.findById(cid);
             if (!thisCart) return { status: 500, message: 'Cart does not exist, check ID.' }
 
             thisCart.products = []
 
             const updateResult = await cartsModel.findByIdAndUpdate(cid, thisCart, { new: true });
-            if (updateResult.nModified === 1) {
-                return { status: 200, message: 'Cart products reseted.', payload: updateResult };
-            } else {
-                return { status: 500, message: 'Cart not found or no changes were made.' };
-            }
+            return { status: 200, message: 'Cart products reseted.', payload: updateResult };
+
 
         } catch (error) { return { status: 'error', message: `Try failed, caught error: ${error.message}` } }
 

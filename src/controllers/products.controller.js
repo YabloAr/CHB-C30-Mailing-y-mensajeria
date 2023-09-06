@@ -7,7 +7,7 @@ class ProductController {
     getAll = async (req, res) => {
         try {
             let allProducts = await ProductsService.getAll()
-            res.status(200).send(allProducts)
+            res.status(200).send({ total: allProducts.length, payload: allProducts })
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }
@@ -43,30 +43,20 @@ class ProductController {
         try {
             const pid = req.params.pid
             const newData = req.body
-            let updatedProduct = {};
 
-            const propertiesToUpdate = ['title', 'description', 'price', 'thumbnail', 'code', 'stock'];
-
-            propertiesToUpdate.forEach(prop => {
-                if (newData.hasOwnProperty(prop)) {
-                    updatedProduct[prop] = newData[prop];
-                }
-            });
-
-            const response = await ProductsService.updateProduct(id, updatedProduct);
-            res.status(200).send({ status: 'Success 200', payload: response })
-
+            const response = await ProductsService.updateProduct(pid, newData);
+            res.status(200).send(response)
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }
     };
 
     //DELETE PRODUCT
-    deleteProduct = async (pid) => {
+    deleteProduct = async (req, res) => {
         try {
+            const pid = req.params.pid
             const response = await ProductsService.deleteProduct(pid)
-
-            res.status(200).send({ status: 'Success 200', payload: response })
+            res.status(200).send(response)
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }

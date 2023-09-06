@@ -5,11 +5,7 @@ class CartsController {
     getAll = async (req, res) => {
         try {
             const allCarts = await CartsService.getAll()
-            if (allCarts.length <= 0) {
-                res.send({ status: 'Error', message: 'No existing carts.' })
-            } else {
-                res.status(200).send({ payload: allCarts })
-            }
+            res.status(200).send({ total: allCarts.carts.length, payload: allCarts })
         } catch (error) { throw error }
     }
 
@@ -17,11 +13,8 @@ class CartsController {
         try {
             const cid = req.params.cid
             const foundCart = await CartsService.getCartById(cid)
-            if (foundCart.status === 200) {
-                res.status(200).send({ payload: foundCart })
-            } else {
-                res.send({ status: "Error", payload: foundCart })
-            }
+            res.send({ payload: foundCart })
+
         } catch (error) { throw error }
     }
 
@@ -42,24 +35,7 @@ class CartsController {
             const pid = req.params.pid
 
             const result = await CartsService.addProductToCart(cid, pid)
-            if (result.status === 200) {
-                res.status(200).send({ status: "Ok", payload: result })
-            } else {
-                res.status(500).send({ status: "error", payload: result });
-            }
-        } catch (error) { throw error }
-    }
-
-    updateCartProducts = async (req, res) => {
-        try {
-            const cid = req.params.cid
-            const newProducts = req.body
-            const result = await CartsService.updateCartProducts(cid, newProducts)
-            if (result.status === 200) {
-                res.status(200).send({ status: "Ok", payload: result })
-            } else {
-                res.status(500).send({ status: "error", message: error.message });
-            }
+            res.status(500).send({ payload: result });
         } catch (error) { throw error }
     }
 
@@ -67,15 +43,24 @@ class CartsController {
         try {
             const cid = req.params.cid
             const pid = req.params.pid
+
             const quantity = req.body
             const quantityNumber = parseInt(quantity.quantity)
 
             const result = await CartsService.updateQuantity(cid, pid, quantityNumber)
-            if (result.status === 200) {
-                res.status(200).send({ status: "Ok", payload: result })
-            } else {
-                res.status(500).send({ status: "error", payload: result });
-            }
+            res.status(200).send({ payload: result })
+
+        } catch (error) { throw error }
+    }
+
+    replaceProducts = async (req, res) => {
+        try {
+            const cid = req.params.cid
+            const newProducts = req.body
+
+            const result = await CartsService.replaceProducts(cid, newProducts)
+            res.status(200).send({ payload: result })
+
         } catch (error) { throw error }
     }
 
@@ -84,11 +69,8 @@ class CartsController {
             const cid = req.params.cid
             const pid = req.params.pid
             const result = await CartsService.deleteProductFromCart(cid, pid)
-            if (result.status === 200) {
-                res.status(200).send({ status: "Ok", payload: result })
-            } else {
-                res.status(500).send({ status: "error", payload: result });
-            }
+            res.status(200).send({ payload: result })
+
         } catch (error) { throw error }
     }
 
@@ -96,11 +78,8 @@ class CartsController {
         try {
             const cid = req.params.cid
             const result = await CartsService.emptyCart(cid)
-            if (result.status === 200) {
-                res.status(200).send({ status: "Ok", payload: result })
-            } else {
-                res.status(500).send({ status: "error", payload: result });
-            }
+            res.status(200).send({ status: "Ok", payload: result })
+
         } catch (error) { throw error }
     }
 

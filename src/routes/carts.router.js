@@ -17,11 +17,11 @@ router.post('/', CartsController.createCart)
 //ADD TO CART
 router.post('/:cid/products/:pid', CartsController.addToCart)
 
-//UPDATE ARRAY OF PRODUCTS IN CART
-router.put('/:cid', CartsController.updateCartProducts)
-
 //UPDATE QUANTITY OF PRODUCT IN CART
 router.put('/:cid/products/:pid', CartsController.updateQuantity)
+
+//UPDATE ARRAY OF PRODUCTS IN CART
+router.put('/:cid', CartsController.replaceProducts)
 
 //DELETE PRODUCT FROM CART
 router.delete('/:cid/products/:pid', CartsController.deleteProductFromCart)

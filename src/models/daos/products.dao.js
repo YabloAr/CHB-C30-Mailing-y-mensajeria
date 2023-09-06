@@ -41,28 +41,26 @@ class ProductsDAO {
     //UPDATE PRODUCT
     updateProduct = async (pid, updatedFields) => {
         try {
-            // Assuming there's a 'Product' model defined for Mongoose
+            let foundProduct = await productsModel.findById(pid)
+            if (!foundProduct) return null
             const updatedProduct = await productsModel.findByIdAndUpdate(pid, updatedFields, { new: true });
-
-            if (!updatedProduct) return null
-
             return updatedProduct;
         } catch (error) {
             throw error;
         }
-
     }
 
     //DELETE PRODUCT
     deleteProduct = async (pid) => {
         try {
-            await productsModel.deleteOne({ _id: pid });
+            const result = await productsModel.deleteOne({ _id: pid });
             if (result.deletedCount === 0) {
-                return { status: 'Error', message: `Product ${pid} not found.` };
+                return null
             }
             return { status: 'Success.', message: `Product ${pid} deleted.` };
         } catch (error) { return { status: 'Error', message: error.message } }
     };
+
 
     //generateNewCode 7 digits
     generateNewCode = async () => {

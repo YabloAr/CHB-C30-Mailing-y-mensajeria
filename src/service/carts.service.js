@@ -12,9 +12,9 @@ class CartsService {
 
     async getCartById(cid) {
         try {
-            return await CartsDAO.getCartById(cid)
+            const response = await CartsDAO.getCartById(cid)
+            return response === null ? { status: 404, message: 'Cart id not found' } : response
         } catch (error) { throw error }
-
     }
 
     async createCart() {
@@ -29,15 +29,15 @@ class CartsService {
         } catch (error) { throw error }
     }
 
-    async updateCartProducts(cid, newProducts) {
-        try {
-            return await CartsDAO.updateCartProducts(cid, newProducts)
-        } catch (error) { throw error }
-    }
-
     async updateQuantity(cid, pid, quantityNumber) {
         try {
             return await CartsDAO.updateQuantity(cid, pid, quantityNumber)
+        } catch (error) { throw error }
+    }
+
+    async replaceProducts(cid, newProducts) {
+        try {
+            return await CartsDAO.replaceProducts(cid, newProducts)
         } catch (error) { throw error }
     }
 
