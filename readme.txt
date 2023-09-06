@@ -1,5 +1,7 @@
-CODERHOUSE - BACKEND #43360
+CODERHOUSE - BACKEND #43360 - Tercera Entrega de Proyecto Final
 Tutora: Noelia Cossio.
 
-Repositorio para la entrega de la clase numero 27, "Arquitectura por capas"
-Entrega Completada.
+
+Repositorio para la entrega de la clase numero 30, "Mailing y mensajeria"
+Init Test.
+Init test.
