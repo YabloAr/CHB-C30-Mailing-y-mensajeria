@@ -2,7 +2,7 @@ import { Router } from 'express'
 import ProductsController from '../controllers/products.controller.js'
 
 const router = Router()
-
+//agregar middlewares de credentiales
 router.get('/', ProductsController.getAll)
 router.get('/:pid', ProductsController.getProductById)
 router.post('/', ProductsController.createProduct)

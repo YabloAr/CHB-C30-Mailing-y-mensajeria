@@ -24,8 +24,8 @@ class CartsDAO {
     createCart = async () => {
         try {
             let newCart = new CartDTO()
-            await cartsModel.create(newCart)
-            return ({ status: 200, message: 'Cart created.' })
+            const result = await cartsModel.create(newCart)
+            return ({ status: 200, message: 'Cart created.', payload: result })
         } catch (error) { throw error }
     }
 

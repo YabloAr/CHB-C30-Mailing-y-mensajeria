@@ -29,7 +29,6 @@ class ProductsService {
 
     async updateProduct(pid, newData) {
         try {
-
             const response = await ProductsDAO.updateProduct(pid, newData)
             if (response === null) return { status: 'error', message: 'Product not found' }
             return response

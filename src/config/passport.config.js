@@ -1,14 +1,16 @@
 import passport from 'passport'
 import local from 'passport-local'
 import userModel from '../models/schemas/users.js'
-import { createHash, isValidPassword } from '../utils.js'
+import { isValidPassword } from '../utils.js'
 import gitHubService from 'passport-github2'
+import UsersDTO from '../controllers/DTO/user.dto.js'
 
 const LocalStrategy = local.Strategy
 
 passport.serializeUser((user, done) => {
     done(null, user._id)
 })
+
 passport.deserializeUser(async (id, done) => {
     let user = await userModel.findById(id)
     done(null, user)
@@ -16,30 +18,33 @@ passport.deserializeUser(async (id, done) => {
 
 passport.use('register', new LocalStrategy(
     { passReqToCallback: true, usernameField: 'email' }, async (req, username, password, done) => {
-        const { first_name, last_name, email, age, password: userPassword } = req.body
         try {
-            let user = await userModel.findOne({ email: username })
-            if (user) {
+            const userRegisterData = req.body
+            let exists = await userModel.findOne({ email: userRegisterData.email })
+            if (exists) {
                 console.log("User already exist.")
                 return done(null, false) //Retorna null, false. Porque error en si no hay.
             }
-            const newUser = { first_name, last_name, email, age, password: createHash(userPassword), cartId: 'for now, just a string' }
+            const newUser = await UsersDTO.createUser(userRegisterData)
             let result = await userModel.create(newUser)
+            console.log(result)
             return done(null, result)
-        } catch (error) { return res.status(400).send({ status: "error", error: "" }) }
+        } catch (error) {
+            throw error
+        }
     }
 ))
 
 //login strategy
 passport.use('login', new LocalStrategy({ usernameField: 'email' }, async (userEmail, password, done) => {
     try {
-        const user = await userModel.findOne({ email: userEmail })
-        if (!user) {
+        const exists = await userModel.findOne({ email: userEmail })
+        if (!exists) {
             console.log("passport.config login strat : user doesnt exist")
             return done(null, false)
         }
-        if (!isValidPassword(user, password)) return done(null, false)
-        return done(null, user) //cuando esta info sale de aca, queda guardada en req.user
+        if (!isValidPassword(exists, password)) return done(null, false)
+        return done(null, exists) //cuando esta info sale de aca, queda guardada en req.user
     } catch (error) {
         return done(error)
     }

@@ -103,7 +103,7 @@ router.get('/register', (req, res) => {
 router.get('/login', (req, res) => {
     const session = { current: false }
     if (req.session.user) {
-        console.log('logged in')
+        console.log('already logged in')
         session.current = true
         session.name = req.session.user.first_name
     }

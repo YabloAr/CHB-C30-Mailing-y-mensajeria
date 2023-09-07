@@ -1,11 +1,11 @@
 import { Router } from 'express'
 import passport from 'passport'
+import SafeUserDTO from '../controllers/DTO/safeUser.dto.js'
 
 const router = Router()
 
-
 //REGISTER
-router.get('/register', passport.authenticate('register', { failureRedirect: '/failregister' }), async (req, res) => {
+router.post('/register', passport.authenticate('register', { failureRedirect: '/failregister' }), async (req, res) => {
     res.send({ status: 'success', message: 'User registered' })
 })
 router.get('/failedregister', async (req, res) => {
@@ -40,9 +40,15 @@ router.get('/githubcallback', passport.authenticate('github', { failureRedirect:
 })
 
 //USER CURRENT
-router.get('/api/current', (req, res) => {
-    res.send({ status: "success", payload: req.user })
+router.get('/current', (req, res) => {
+    if (req.session.user === undefined) {
+        res.render('failedlogin');
+    } else {
+        const safeUserData = new SafeUserDTO(req.session.user)
+        res.send({ status: "success", payload: safeUserData })
+    }
 })
+
 router.post('/logout', async (req, res) => {
     req.session.destroy(error => {
         if (error) { res.status(400).send({ error: 'logout error', message: error }) }

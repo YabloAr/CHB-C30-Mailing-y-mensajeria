@@ -5,9 +5,6 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import "dotenv/config";
 
-// Devuelve una string con el password hasheado. El proceso es IRREVERSIBLE.
-export const createHash = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-
 //compareSyync tomara primero el password sin hashear y lo compara con el password ya hasheado en la base 
 //de datos. Devuelve true o false dependiendo si el password coincide o no.
 export const isValidPassword = (user, password) => bcrypt.compareSync(password, user.password);
