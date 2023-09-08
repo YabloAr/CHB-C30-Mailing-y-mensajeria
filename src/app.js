@@ -7,7 +7,7 @@ import express from "express"
 import __dirname from "./utils.js";
 import handlebars from "express-handlebars";
 import mongoose from "mongoose";
-import { Server } from 'socket.io'
+
 import MongoStore from "connect-mongo"; //for storing sessions data
 import session from "express-session"; //sessions
 import passport from "passport";
@@ -16,6 +16,7 @@ import cors from 'cors'
 
 //Gestores de rutas y manager de mensajes
 import appRouter from "./routes/app.router.js";
+
 
 //Definimos el servidor y agregamos el middleware de parseo de las request
 const PORT = 8080 //Buena practica, definir una variable con el puerto.
@@ -60,18 +61,20 @@ app.use(passport.session())
 app.use("/", appRouter)
 
 //------------------COMIENZA Aplicacion chat con socket.io
+import messagesDao from "./models/daos/messages.dao.js";
+import { Server } from 'socket.io'
 
 app.use(express.static(__dirname + '/public')) //en el js pasa la magia.
 const io = new Server(httpserver) //Declaramos el servidor http dentro del server de express para socket.io
 
 //Encendemos el socket con .on (escucha/recibe)
 io.on('connection', socket => {
-    // console.log("App.js Chat: New client connected.")
+    console.log("App.js Chat: New client connected.")
     //el socket espera algun 'message' desde el cliente (index.js), data llega como objeto, {user: x, message: x}
     socket.on('message', async data => {
         try {
-            await MessageManager.saveMessage(data)
-            const allMessages = await MessageManager.getAllMessages()
+            await messagesDao.saveMessage(data)
+            const allMessages = await messagesDao.getAllMessages()
             io.emit('messageLogs', allMessages) //envia al cliente la coleccion completa de mensajes desde la db
         } catch (error) { return { status: 'error', message: `app.js socket.io save or getAll messages failed. ${error.message}` } }
     })

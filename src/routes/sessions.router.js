@@ -9,6 +9,7 @@ router.post('/register', passport.authenticate('register', { failureRedirect: '/
     res.send({ status: 'success', message: 'User registered' })
 })
 router.get('/failedregister', async (req, res) => {
+    console.log("failed register entry")
     res.send({ error: 'Failed register' })
 })
 

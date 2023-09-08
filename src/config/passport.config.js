@@ -1,6 +1,6 @@
 import passport from 'passport'
 import local from 'passport-local'
-import userModel from '../models/schemas/users.js'
+import userModel from '../models/schemas/users.schema.js'
 import { isValidPassword } from '../utils.js'
 import gitHubService from 'passport-github2'
 import UsersDTO from '../controllers/DTO/user.dto.js'
@@ -25,9 +25,9 @@ passport.use('register', new LocalStrategy(
                 console.log("User already exist.")
                 return done(null, false) //Retorna null, false. Porque error en si no hay.
             }
+
             const newUser = await UsersDTO.createUser(userRegisterData)
             let result = await userModel.create(newUser)
-            console.log(result)
             return done(null, result)
         } catch (error) {
             throw error
@@ -59,16 +59,16 @@ passport.use('github', new gitHubService({
     try {
         // console.log('passport strat GitHubService profile is:')
         // console.log(profile)
-        let user = await userModel.findOne({ email: profile.emails[0].value })
-        if (!user) {
-            let newUser = {
+        let exists = await userModel.findOne({ email: profile.emails[0].value })
+        if (!exists) {
+            let userRegisterData = {
                 first_name: profile._json.login,
                 last_name: '',
                 age: '',
                 email: profile.emails[0].value,
                 password: '',
-                cartId: 'for now, just a string'
             }
+            const newUser = await UsersDTO.createUser(userRegisterData)
             let result = await userModel.create(newUser)
             done(null, result)
         } else {

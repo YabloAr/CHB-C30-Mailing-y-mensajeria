@@ -1,6 +1,7 @@
 import { Router } from "express";
 import CartDAO from '../models/daos/carts.dao.js'
 import productsModel from "../models/schemas/products.schema.js";
+import SafeUsersDTO from '../controllers/DTO/safeUser.dto.js';
 
 const router = Router()
 
@@ -11,7 +12,8 @@ router.get('/', (req, res) => {
     const toLogin = 'http://localhost:8080/login'
     const toRegister = 'http://localhost:8080/register'
     const toProfile = 'http://localhost:8080/profile'
-    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile })
+    const toChat = 'http://localhost:8080/chat'
+    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile, toChat })
 })
 
 //-------------------------------PRODUCTS VIEW
@@ -71,7 +73,10 @@ router.get('/carts', async (req, res) => {
 
 //-------------------------------CART DETAILS VIEW
 router.get('/carts/:cid', async (req, res) => {
-    if (!req.session?.user) res.redirect('/login');
+    if (!req.session.user) {
+        res.render('failedlogin')
+        return
+    }
     const cid = req.params.cid
     const response = await CartDAO.getCartById(cid)
     const thisCart = response.cart
@@ -80,16 +85,21 @@ router.get('/carts/:cid', async (req, res) => {
         ...productData.product.toObject(),
         quantity: productData.quantity
     }));
-
-
     res.render('cart', { cid, products })
 })
 
 //-------------------------------CHAT APP
 router.get('/chat', (req, res) => {
-    res.render('chat', {
-        style: 'index.css'
-    })
+    if (!req.session.user) {
+        res.render('failedlogin')
+    } else {
+        res.render('chat', {
+            style: 'index.css',
+            userName: req.session.user.first_name,
+            userEmail: req.session.user.email,
+        })
+    }
+
 })
 
 
@@ -115,8 +125,8 @@ router.get('/profile', async (req, res) => {
     if (req.session.user === undefined) {
         res.render('failedlogin')
     } else {
-        console.log(req.session.user)
-        res.render('profile', { user: req.session.user })
+        const safeUserData = new SafeUsersDTO(req.session.user)
+        res.render('profile', { user: safeUserData })
     }
 })
 

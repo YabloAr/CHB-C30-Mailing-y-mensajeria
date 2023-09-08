@@ -1,67 +1,48 @@
-import ProductsService from '../service/products.service.js';
-import ProductDTO from './DTO/product.dto.js';
+import usersService from "../service/users.service.js";
 
-
-class ProductController {
+class UserController {
 
     getAll = async (req, res) => {
         try {
-            let allProducts = await ProductsService.getAll()
-            res.status(200).send({ total: allProducts.length, payload: allProducts })
+            let allUsers = await usersService.getAll()
+            res.status(200).send({ total: allUsers.length, payload: allUsers })
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }
     }
 
-    //GET PRODUCT BY ID
-    getProductById = async (req, res) => {
+    getUserById = async (req, res) => {
         try {
-            const pid = req.params.pid
+            const uid = req.params.uid
 
-            let foundProduct = await ProductsService.getProductById(pid)
-            if (!foundProduct) return { status: 'failed.', message: `Product ${pid} not found in db.` }
-            res.status(200).send(foundProduct)
+            let foundUser = await usersService.getUserById(uid)
+            if (!foundUser) return { status: 'failed.', message: `Product ${uid} not found in db.` }
+            res.status(200).send(foundUser)
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }
     }
 
-    //NEW PRODUCT
-    createProduct = async (req, res) => {
+    createUser = async (req, res) => {
         try {
-            const newProduct = req.body
-            const completeProduct = new ProductDTO(newProduct)
-            const response = await ProductsService.createProduct(completeProduct)
+            const userRegisterData = req.body
+            let result = await usersService.createUser(userRegisterData)
+
+            res.status(200).send(result)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    deleteUser = async (req, res) => {
+        try {
+            const uid = req.params.uid
+            const response = await usersService.deleteUser(uid)
             res.status(200).send(response)
         } catch (error) {
             res.status(400).send({ status: 'Error 400', message: error.message });
         }
     }
-
-    //UPDATE PRODUCT
-    updateProduct = async (req, res) => {
-        try {
-            const pid = req.params.pid
-            const newData = req.body
-
-            const response = await ProductsService.updateProduct(pid, newData);
-            res.status(200).send(response)
-        } catch (error) {
-            res.status(400).send({ status: 'Error 400', message: error.message });
-        }
-    };
-
-    //DELETE PRODUCT
-    deleteProduct = async (req, res) => {
-        try {
-            const pid = req.params.pid
-            const response = await ProductsService.deleteProduct(pid)
-            res.status(200).send(response)
-        } catch (error) {
-            res.status(400).send({ status: 'Error 400', message: error.message });
-        }
-    };
-
 }
 
-export default new ProductController()
+export default new UserController()
