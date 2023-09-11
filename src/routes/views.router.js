@@ -99,7 +99,6 @@ router.get('/chat', (req, res) => {
             userEmail: req.session.user.email,
         })
     }
-
 })
 
 

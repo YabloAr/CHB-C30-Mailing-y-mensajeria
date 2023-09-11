@@ -4,7 +4,6 @@ import SafeUserDTO from '../controllers/DTO/safeUser.dto.js'
 
 const router = Router()
 
-//REGISTER
 router.post('/register', passport.authenticate('register', { failureRedirect: '/failregister' }), async (req, res) => {
     res.send({ status: 'success', message: 'User registered' })
 })
@@ -13,7 +12,6 @@ router.get('/failedregister', async (req, res) => {
     res.send({ error: 'Failed register' })
 })
 
-//LOGIN
 router.post('/login', passport.authenticate('login', { failureRedirect: '/failedloginauth' }), async (req, res) => {
     if (!req.user) return res.status(400).send({ status: 'error', error: 'Invalid credentials' })
     req.session.user = {
@@ -33,14 +31,12 @@ router.get('/failedloginauth', async (req, res) => {
     res.status(400).send({ status: 400, error: 'Failed Login.' })
 })
 
-//GITHUB LOGIN
 router.get('/github', passport.authenticate('github', { scope: ['user:email'] }), async (req, res) => { })
 router.get('/githubcallback', passport.authenticate('github', { failureRedirect: '/login' }), async (req, res) => {
     req.session.user = req.user;
     res.redirect('/');
 })
 
-//USER CURRENT
 router.get('/current', (req, res) => {
     if (req.session.user === undefined) {
         res.render('failedlogin');
