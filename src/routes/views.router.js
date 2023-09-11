@@ -2,6 +2,7 @@ import { Router } from "express";
 import CartDAO from '../models/daos/carts.dao.js'
 import productsModel from "../models/schemas/products.schema.js";
 import SafeUsersDTO from '../controllers/DTO/safeUser.dto.js';
+import { checkAdmin, checkSession, checkUser } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 
@@ -13,16 +14,13 @@ router.get('/', (req, res) => {
     const toRegister = 'http://localhost:8080/register'
     const toProfile = 'http://localhost:8080/profile'
     const toChat = 'http://localhost:8080/chat'
-    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile, toChat })
+    const toCurrent = 'http://localhost:8080/api/sessions/current'
+    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile, toChat, toCurrent })
 })
 
 //-------------------------------PRODUCTS VIEW
-router.get('/products', async (req, res) => {
+router.get('/products', checkSession, checkUser, async (req, res) => {
     try {
-        if (!req.session.user) {
-            res.render('failedlogin')
-            return
-        }
         const user = req.session.user
         //Optimizado, validamos la query, si no existe, le otorgamos el valor por defecto.
         const page = parseInt(req.query.page) || 1
@@ -64,8 +62,7 @@ router.get('/products', async (req, res) => {
 })
 
 //-------------------------------CARTS VIEW
-router.get('/carts', async (req, res) => {
-    if (!req.session?.user) res.redirect('/login');
+router.get('/carts', checkSession, checkAdmin, async (req, res) => {
     let response = await CartDAO.getAll()
     let carts = response.carts
     res.render('carts', { carts })
@@ -89,7 +86,7 @@ router.get('/carts/:cid', async (req, res) => {
 })
 
 //-------------------------------CHAT APP
-router.get('/chat', (req, res) => {
+router.get('/chat', checkSession, checkUser, (req, res) => {
     if (!req.session.user) {
         res.render('failedlogin')
     } else {
@@ -120,13 +117,10 @@ router.get('/login', (req, res) => {
 })
 
 //PROFILE VIEW
-router.get('/profile', async (req, res) => {
-    if (req.session.user === undefined) {
-        res.render('failedlogin')
-    } else {
-        const safeUserData = new SafeUsersDTO(req.session.user)
-        res.render('profile', { user: safeUserData })
-    }
+router.get('/profile', checkSession, async (req, res) => {
+    const safeUserData = new SafeUsersDTO(req.session.user)
+    res.render('profile', { user: safeUserData })
+
 })
 
 export default router

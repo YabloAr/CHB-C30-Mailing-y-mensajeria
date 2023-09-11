@@ -7,15 +7,6 @@ import UsersDTO from '../controllers/DTO/user.dto.js'
 
 const LocalStrategy = local.Strategy
 
-passport.serializeUser((user, done) => {
-    done(null, user._id)
-})
-
-passport.deserializeUser(async (id, done) => {
-    let user = await userModel.findById(id)
-    done(null, user)
-})
-
 passport.use('register', new LocalStrategy(
     { passReqToCallback: true, usernameField: 'email' }, async (req, username, password, done) => {
         try {
@@ -78,5 +69,16 @@ passport.use('github', new gitHubService({
         return done(error)
     }
 }))
+
+
+
+passport.serializeUser((user, done) => {
+    done(null, user._id)
+})
+
+passport.deserializeUser(async (id, done) => {
+    let user = await userModel.findById(id)
+    done(null, user)
+})
 
 export const initPassport = () => {/*Quedo vacio despues de la sacar la estrategia 'register' de adentro hecha en clase*/ }

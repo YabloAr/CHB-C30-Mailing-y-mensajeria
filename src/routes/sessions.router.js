@@ -1,9 +1,11 @@
 import { Router } from 'express'
 import passport from 'passport'
 import SafeUserDTO from '../controllers/DTO/safeUser.dto.js'
+import { checkAdmin, checkSession } from '../middlewares/auth.middleware.js'
 
 const router = Router()
 
+//-------api/sessions
 router.post('/register', passport.authenticate('register', { failureRedirect: '/failregister' }), async (req, res) => {
     res.send({ status: 'success', message: 'User registered' })
 })
@@ -37,13 +39,9 @@ router.get('/githubcallback', passport.authenticate('github', { failureRedirect:
     res.redirect('/');
 })
 
-router.get('/current', (req, res) => {
-    if (req.session.user === undefined) {
-        res.render('failedlogin');
-    } else {
-        const safeUserData = new SafeUserDTO(req.session.user)
-        res.send({ status: "success", payload: safeUserData })
-    }
+router.get('/current', checkSession, checkAdmin, (req, res) => {
+    res.send({ status: "success", payload: req.session.user })
+
 })
 
 router.post('/logout', async (req, res) => {

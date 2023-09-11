@@ -12,7 +12,7 @@ import MongoStore from "connect-mongo";
 import session from "express-session";
 import passport from "passport";
 import { initPassport } from "./config/passport.config.js";
-import setupSocket from "./config/socket.js";
+import setupSocket from "./chat/socket.js";
 import cors from 'cors'
 
 //EXPRESS - Definimos el servidor y su config
