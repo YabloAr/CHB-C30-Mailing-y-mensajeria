@@ -3,5 +3,3 @@ Tutora: Noelia Cossio.
 
 
 Repositorio para la entrega de la clase numero 30, "Mailing y mensajeria"
-Init Test.
-Init test.
