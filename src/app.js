@@ -35,7 +35,7 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@cluster0.hiwmxr5.mongodb.net/ecommerce?retryWrites=true&w=majority`,
         mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
-        ttl: 120
+        ttl: 5000
     }),
     secret: process.env.SESSION_SECRET,
     resave: true,

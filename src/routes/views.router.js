@@ -15,11 +15,27 @@ router.get('/', (req, res) => {
     const toProfile = 'http://localhost:8080/profile'
     const toChat = 'http://localhost:8080/chat'
     const toCurrent = 'http://localhost:8080/api/sessions/current'
-    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile, toChat, toCurrent })
+    const toAdmin = 'http://localhost:8080/admin'
+    const toPurchase = 'http://localhost:8080/api/tickets/6500b2f27498919c55e6d7f8/purchase'
+    res.render('landing', { toProducts, toCarts, toLogin, toRegister, toProfile, toChat, toCurrent, toAdmin, toPurchase })
+})
+//-------------------------------USER UTILITIES VIEWS
+router.get('/register', (req, res) => {
+    res.render('register')
 })
 
-//-------------------------------PRODUCTS VIEW
-router.get('/products', checkSession, checkUser, async (req, res) => {
+router.get('/login', (req, res) => {
+    const session = { current: false }
+    if (req.session.user) {
+        console.log('already logged in')
+        session.current = true
+        session.name = req.session.user.first_name
+    }
+    res.render('login', { session })
+})
+
+//-------------------------------EVERYONE
+router.get('/products', checkSession, async (req, res) => {
     try {
         const user = req.session.user
         //Optimizado, validamos la query, si no existe, le otorgamos el valor por defecto.
@@ -61,14 +77,37 @@ router.get('/products', checkSession, checkUser, async (req, res) => {
     } catch (error) { res.status(500).send({ status: 'error', error: error.message }); }
 })
 
-//-------------------------------CARTS VIEW
-router.get('/carts', checkSession, checkAdmin, async (req, res) => {
+router.get('/carts', checkSession, async (req, res) => {
     let response = await CartDAO.getAll()
     let carts = response.carts
     res.render('carts', { carts })
 })
 
-//-------------------------------CART DETAILS VIEW
+router.get('/profile', checkSession, async (req, res) => {
+    const safeUserData = new SafeUsersDTO(req.session.user)
+    res.render('profile', { user: safeUserData })
+
+})
+
+//-------------------------------USERS
+router.get('/chat', checkSession, checkUser, (req, res) => {
+    if (!req.session.user) {
+        res.render('failedlogin')
+    } else {
+        res.render('chat', {
+            style: 'index.css',
+            userName: req.session.user.first_name,
+            userEmail: req.session.user.email,
+        })
+    }
+})
+
+
+//-------------------------------ADMIN
+router.get('/admin', checkSession, checkAdmin, async (req, res) => {
+    res.render('admin')
+})
+
 router.get('/carts/:cid', async (req, res) => {
     if (!req.session.user) {
         res.render('failedlogin')
@@ -85,42 +124,6 @@ router.get('/carts/:cid', async (req, res) => {
     res.render('cart', { cid, products })
 })
 
-//-------------------------------CHAT APP
-router.get('/chat', checkSession, checkUser, (req, res) => {
-    if (!req.session.user) {
-        res.render('failedlogin')
-    } else {
-        res.render('chat', {
-            style: 'index.css',
-            userName: req.session.user.first_name,
-            userEmail: req.session.user.email,
-        })
-    }
-})
 
-
-//-------------------------------USER UTILITIES VIEWS
-//REGISTER
-router.get('/register', (req, res) => {
-    res.render('register')
-})
-
-//LOGIN
-router.get('/login', (req, res) => {
-    const session = { current: false }
-    if (req.session.user) {
-        console.log('already logged in')
-        session.current = true
-        session.name = req.session.user.first_name
-    }
-    res.render('login', { session })
-})
-
-//PROFILE VIEW
-router.get('/profile', checkSession, async (req, res) => {
-    const safeUserData = new SafeUsersDTO(req.session.user)
-    res.render('profile', { user: safeUserData })
-
-})
 
 export default router

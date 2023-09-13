@@ -30,6 +30,7 @@ class ProductController {
     createProduct = async (req, res) => {
         try {
             const newProduct = req.body
+            console.log(newProduct)
             const completeProduct = new ProductDTO(newProduct)
             const response = await ProductsService.createProduct(completeProduct)
             res.status(200).send(response)

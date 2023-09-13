@@ -37,7 +37,9 @@ class CartsDAO {
             let thisProduct = await productModel.findById(pid)
             if (!thisProduct) return { status: 500, message: 'Product doesnt exist in db, check id.' }
 
-            const productIndex = await thisCart.products.findIndex((p) => p.product._id.toString() === pid);
+            console.log(thisCart)
+
+            const productIndex = await thisCart.products.findIndex((item) => item.product._id.toString() === pid);
             if (productIndex !== -1) {
                 thisCart.products[productIndex].quantity = parseInt(thisCart.products[productIndex].quantity) + 1
             } else {
